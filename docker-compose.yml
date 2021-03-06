@@ -1,0 +1,74 @@
+version: "3.5"
+
+services:
+
+  # postgres:
+  #   container_name: postgres
+  #   environment:
+  #     - POSTGRES_DB=database
+  #     - POSTGRES_PASSWORD=password
+  #     - POSTGRES_USER=user
+  #   image: postgres:latest
+  #   volumes:
+  #     - ./data/db:/var/lib/postgresql/data
+
+  zookeeper:
+    container_name: zookeper
+    restart: on-failure
+    image: wurstmeister/zookeeper:3.4.6
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - back-tier
+
+  kafka:
+    container_name: kafka
+    restart: on-failure
+    image: wurstmeister/kafka:2.11-2.0.1
+    hostname: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: 172.17.0.1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_CREATE_TOPICS: 'test:1:1'
+    ports:
+      - "9092:9092"
+    networks:
+      - back-tier
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+# MY SERVICES DEFINITIONS HERE
+# ----------------------------
+  producer:
+    build: ./producer
+    container_name: producer
+    depends_on:
+      - kafka
+    environment:
+      URL: ${MONITOR}
+      HOST: "172.17.0.1:9092"
+      TOPIC: test
+      PATTERN: "\bfloods?\b"
+      FREQUENCY: 30
+      DEADLINE: 500
+
+  # consumer:
+  #   build: ./consumer
+  #   container_name: consumer
+  #   depends_on:
+  #     - kafka
+  #   environment:
+  #     - POSTGRES_DB=database
+  #     - POSTGRES_PASSWORD=password
+  #     - POSTGRES_USER=user
+  #   networks:
+  #     - back-tier
+  #   command: tail -F anything
+# ----------------------------
+
+networks:
+  back-tier:
+    attachable: true
