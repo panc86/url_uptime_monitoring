@@ -6,7 +6,8 @@ COPY . /consumer
 
 # update os, pip and install libraries
 RUN set -e; \
-    apk -U --no-cache upgrade; \
-    apk add --no-cache gcc libc-dev linux-headers; \
-    pip install --upgrade pip; \
-    pip install --no-cache-dir kafka-python==2.0.2;
+    apk update; \
+    apk --no-cache add postgresql-dev gcc python3-dev musl-dev; \
+    pip install --no-cache-dir -r requirements.txt;
+
+ENTRYPOINT [ "python", "consumer.py" ]
