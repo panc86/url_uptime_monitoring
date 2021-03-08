@@ -14,11 +14,12 @@ from kafka import KafkaProducer
 logger = logging.getLogger("producer")
 
 
-def regex_compiler(regex: str):
+def regex_compiler():
     """
-    Regex compiler function to transform input argument
+    Regex compiler function to transform input argument if given
     """
-    return re.compile(regex, re.IGNORECASE)
+    regex = os.environ.get('REGEX', None)
+    return re.compile(regex, re.IGNORECASE) if regex is not None else regex
 
 
 def get_status_code(response: Response):
@@ -76,7 +77,7 @@ def tracking(url, topic, client, frequency=5, regex=None):
     while True:
         response = get_response(url)
         payload = get_payload(response)
-        if regex:
+        if regex is not None:
             payload['regex_pattern'] = regex.pattern # reference
             payload['regex_matches'] = get_matches_count(response.text, regex)
         client.send(topic, value=payload)
@@ -108,8 +109,6 @@ if __name__ == "__main__":
     parser.add_argument("--bootstrap-server", required=True, help="The bootstrap server address the Kafka Producer initially connects to.")
     parser.add_argument("--topic", required=True, type=str, help="The Kafka topic ID.")
     parser.add_argument("--frequency", required=False, type=int, default=5, help="Frequency of monitoring in seconds. Default is %(default)s.")
-    parser.add_argument(
-        "--regex", required=False, type=regex_compiler, help="Regex pattern to search in the response content. Example search: `flood` keyword=`\bfloods?\b`")
     args = parser.parse_args(sys.argv[1:])
 
     if int(os.environ.get('DEBUG', 0)) == 1:
@@ -118,9 +117,8 @@ if __name__ == "__main__":
 
     # create Kafka Producer client instance
     client = init_producer_client(args.bootstrap_server)
-
     # start tracking url
     tracking(
         args.url, args.topic, client,
-        frequency=args.frequency, regex=args.regex
+        frequency=args.frequency, regex=regex_compiler()
     )
