@@ -1,8 +1,12 @@
 # pylint: disable=redefined-outer-name
 import pytest
-import datetime
+import os
 import re
+import time
+import datetime
 import producer
+from requests import Response
+from kafka import KafkaProducer
 
 
 class TestResponse(object):
@@ -13,20 +17,39 @@ class TestResponse(object):
 
 
 @pytest.fixture
+def url():
+    return 'http://www.example.com'
+
+
+@pytest.fixture
+def bad_url():
+    return 'http://www.example.'
+
+
+@pytest.fixture
 def response():
     # a valid url should return 200
     return TestResponse()
 
 
 @pytest.fixture
-def pattern():
-    return re.compile(r'\bresponse\b', re.I)
+def regex():
+    return re.compile(r"\bresponse\b", re.IGNORECASE)
 
 
 @pytest.fixture
-def pattern_is_none():
-    # If no regex pattern returned value is 0
-    return None
+def text(response):
+    return response.text
+
+
+@pytest.fixture(scope="session")
+def client():
+    client = KafkaProducer(
+            api_version=(2,0,1),
+            bootstrap_servers=["172.17.0.1:9092"],
+        )
+    time.sleep(1)
+    return client
 
 
 def test_get_status_code(response):
@@ -40,21 +63,25 @@ def test_get_elapsed_seconds(response):
     assert response.elapsed.total_seconds() == 0.00042
 
 
-def test_get_matches_count(response, pattern):
-    assert hasattr(response, "text")
-    assert response.text == 'fake response text'
-    assert producer.get_matches_count(response, pattern) == 1
+def test_get_matches_count(text, regex):
+    assert producer.get_matches_count(text, regex) == 1
 
 
-def test_get_matches_count_missing_pattern(response, pattern_is_none):
-    assert producer.get_matches_count(response, pattern_is_none) == 0
+def test_get_response(url):
+    assert isinstance(producer.get_response(url), Response)
 
 
-# TODO
-#def test_get_payload(url, pattern):
-#    pass
+def test_get_response_raise(bad_url):
+    with pytest.raises(SystemExit):
+        producer.get_response(bad_url)
 
 
-# TODO
-#def test_monitor():
-#    pass
+def test_get_payload(response):
+    payload = producer.get_payload(response)
+    assert len(payload) == 3
+    assert "created_at" in payload
+    assert isinstance(payload["created_at"], str)
+
+
+def test_client_connected(client):
+    assert client.bootstrap_connected()
