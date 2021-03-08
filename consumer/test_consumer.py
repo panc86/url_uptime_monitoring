@@ -6,9 +6,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 
-@pytest.fixture
-def payload():
-    return dict(
+payload = dict(
         created_at="2021-03-08T17:49:12.629564",
         status_code=420,
         elapsed_seconds=0.0420,
@@ -17,46 +15,23 @@ def payload():
     )
 
 
-@pytest.fixture
-def bad_payload():
-    return dict(
-        status_=420, # wrong key name
-        elapsed_seconds=0.0420,
-        regex_pattern=None
-    )
-
-
-@pytest.fixture
-def incomplete_payload():
-    return dict(
-        status_code=420,
-        elapsed_seconds=0.0420,
-        regex_pattern=None
-    )
-
-
-@pytest.fixture
-def test_topic():
-    return 'test_' + os.environ['TOPIC_ID']
-
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def test_db():
     return consumer.setup_db(os.environ['DB_URI_TEST'])
 
-
-@pytest.fixture
+@pytest.fixture(scope="module")
 def test_session(test_db):
     return consumer.init_session(test_db)
 
 
-@pytest.fixture
-def consumer_client(test_topic):
-    bootstrap_server = os.environ['BOOTSTRAP_SERVER']
-    return consumer.init_consumer_client(bootstrap_server, test_topic)
+@pytest.fixture(scope="module")
+def consumer_client():
+    return consumer.init_consumer_client(
+        os.environ['BOOTSTRAP_SERVER'], 'test_' + os.environ['TOPIC_ID']
+    )
 
 
-def test_create_message_model(payload):
+def test_create_message_model():
     msg = consumer.create_message_model(payload)
     # Expected in a good message
     assert hasattr(msg, "created_at")
@@ -66,16 +41,24 @@ def test_create_message_model(payload):
     assert hasattr(msg, "regex_pattern")
 
 
-def test_create_message_model_with_bad_payload(bad_payload):
+def test_create_message_model_with_bad_payload():
     # Expected in a bad message
     with pytest.raises(TypeError):
-        consumer.Message(**bad_payload)
+        consumer.Message(**{
+            "status_": 420, # wrong key name
+            "elapsed_seconds": 0.0420,
+            "regex_pattern": None
+            })
 
 
-def test_create_message_model_with_incomplete_payload(incomplete_payload):
+def test_create_message_model_with_incomplete_payload():
     # Expected in a incomplete message
     with pytest.raises(TypeError):
-        assert consumer.Message(**incomplete_payload)
+        consumer.Message(**dict(
+            status_code=420,
+            elapsed_seconds=0.0420,
+            regex_pattern=None
+        ))
 
 
 def test_setup_db(test_db):
@@ -95,7 +78,7 @@ def test_db_empty(test_session):
     assert test_session.query(consumer.Message).first() is None
 
 
-def test_insert_to_db(payload, test_session):
+def test_insert_to_db(test_session):
     # insert first record
     consumer.insert_to_db(consumer.Message(**payload), test_session)
     # query first record
@@ -104,7 +87,7 @@ def test_insert_to_db(payload, test_session):
     assert first_entry.id == 1
 
 
-def test_init_consumer_client(consumer_client, test_topic):
+def test_init_consumer_client(consumer_client):
     # Is client online?
     assert consumer_client._closed is False
-    assert consumer_client.subscription() == {test_topic}
+    assert consumer_client.subscription() == {'test_' + os.environ['TOPIC_ID']}

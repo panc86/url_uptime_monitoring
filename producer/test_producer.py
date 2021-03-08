@@ -16,73 +16,50 @@ class TestResponse(object):
     text = 'fake response text'
 
 
-@pytest.fixture
-def url():
-    return 'http://www.example.com'
+url = 'http://www.example.com'
+bad_url = 'http://www.example.'
 
 
-@pytest.fixture
-def bad_url():
-    return 'http://www.example.'
-
-
-@pytest.fixture
-def response():
-    # a valid url should return 200
-    return TestResponse()
-
-
-@pytest.fixture
-def regex():
-    return re.compile(r"\bresponse\b", re.IGNORECASE)
-
-
-@pytest.fixture
-def text(response):
-    return response.text
-
-
-@pytest.fixture(scope="session")
-def client():
-    bootstrap_server = os.environ['BOOTSTRAP_SERVER']
-    client = KafkaProducer(
-            api_version=(2,0,1),
-            bootstrap_servers=[bootstrap_server],
-        )
-    time.sleep(2)
-    return client
-
-
-def test_get_status_code(response):
+def test_get_status_code():
+    response = TestResponse()
     assert hasattr(response, "status_code")
     assert response.status_code == 200
 
 
-def test_get_elapsed_seconds(response):
+def test_get_elapsed_seconds():
+    response = TestResponse()
     assert hasattr(response, "elapsed")
     assert type(response.elapsed) == datetime.timedelta
     assert response.elapsed.total_seconds() == 0.00042
 
 
-def test_get_matches_count(text, regex):
-    assert producer.get_matches_count(text, regex) == 1
+def test_get_matches_count():
+    response = TestResponse()
+    regex = re.compile(r"\bresponse\b", re.IGNORECASE)
+    assert producer.get_matches_count(response.text, regex) == 1
 
 
-def test_get_response(url):
+def test_get_response():
     assert isinstance(producer.get_response(url), Response)
 
 
-def test_get_response_raise(bad_url):
+def test_get_response_raise():
     with pytest.raises(SystemExit):
         producer.get_response(bad_url)
 
 
-def test_get_payload(response):
+def test_get_payload():
+    response = TestResponse()
     payload = producer.get_payload(response)
     assert len(payload) == 3
     assert "created_at" in payload
     assert isinstance(payload["created_at"], str)
 
 
-def test_client_connected(client):
+def test_client_connected():
+    client = KafkaProducer(
+        api_version=(2,0,1),
+        bootstrap_servers=[os.environ['BOOTSTRAP_SERVER']],
+    )
+    time.sleep(1)
     assert client.bootstrap_connected()
