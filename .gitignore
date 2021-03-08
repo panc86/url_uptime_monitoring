@@ -1,0 +1,4 @@
+SMDRM_backend_dev_exercise.pdf
+.pytest_cache/
+# Ignore generated files
+**/*.pyc
