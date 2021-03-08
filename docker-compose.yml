@@ -56,7 +56,7 @@ services:
       URL: ${URL_TO_TRACK}
       BOOTSTRAP_SERVER: "${BROKER_IP}:9092"
       TOPIC_ID: ${TOPIC_ID}
-      PATTERN: "\bfloods?\b"
+      REGEX: "\bfloods?\b"
       FREQUENCY: 30
       DEBUG: 0
 
