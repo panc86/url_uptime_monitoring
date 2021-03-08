@@ -27,8 +27,15 @@ class Message(base):
     regex_matches = Column('regex_matches', Integer())
     regex_pattern = Column('regex_pattern', String(100))
 
+    def __init__(self, created_at, status_code, elapsed_seconds, regex_matches=0, regex_pattern=None):
+        self.created_at = created_at
+        self.status_code = status_code
+        self.elapsed_seconds = elapsed_seconds
+        self.regex_matches = regex_matches
+        self.regex_pattern = regex_pattern
+
     def __repr__(self):
-        return f'<Message #{self.id} - created_at: {self.created_at}>'
+        return f'<Message #{self.id}>'
 
 
 def setup_db(uri):
