@@ -37,7 +37,7 @@ services:
     environment:
       KAFKA_ADVERTISED_HOST_NAME: 172.17.0.1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_CREATE_TOPICS: 'test:1:1'
+      KAFKA_CREATE_TOPICS: "${TOPIC_ID}:1:1,test_${TOPIC_ID}:1:1"
     ports:
       - "9092:9092"
     networks:
