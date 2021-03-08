@@ -44,11 +44,12 @@ def text(response):
 
 @pytest.fixture(scope="session")
 def client():
+    bootstrap_server = os.environ['BOOTSTRAP_SERVER']
     client = KafkaProducer(
             api_version=(2,0,1),
-            bootstrap_servers=["172.17.0.1:9092"],
+            bootstrap_servers=[bootstrap_server],
         )
-    time.sleep(1)
+    time.sleep(2)
     return client
 
 

@@ -70,7 +70,6 @@ services:
       DB_URI_TEST: ${DB_URI_TEST}
       BOOTSTRAP_SERVER: "${BROKER_IP}:9092"
       TOPIC_ID: ${TOPIC_ID}
-      GROUP_ID: ${GROUP_ID}
       DEBUG: 0
 
   postgres_test:

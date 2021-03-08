@@ -35,21 +35,25 @@ def incomplete_payload():
     )
 
 
+@pytest.fixture
+def test_topic():
+    return 'test_' + os.environ['TOPIC_ID']
+
+
 @pytest.fixture(scope="session")
 def test_db():
     return consumer.setup_db(os.environ['DB_URI_TEST'])
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def test_session(test_db):
     return consumer.init_session(test_db)
 
 
-@pytest.fixture(scope="session")
-def consumer_client():
+@pytest.fixture
+def consumer_client(test_topic):
     bootstrap_server = os.environ['BOOTSTRAP_SERVER']
-    topic = 'test_' + os.environ['TOPIC_ID']
-    return consumer.init_consumer_client(bootstrap_server, topic)
+    return consumer.init_consumer_client(bootstrap_server, test_topic)
 
 
 def test_create_message_model(payload):
@@ -100,7 +104,7 @@ def test_insert_to_db(payload, test_session):
     assert first_entry.id == 1
 
 
-def test_init_consumer_client(consumer_client):
+def test_init_consumer_client(consumer_client, test_topic):
     # Is client online?
     assert consumer_client._closed is False
-    assert consumer_client.subscription() == {'test_flood'}
+    assert consumer_client.subscription() == {test_topic}

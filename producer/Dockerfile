@@ -8,4 +8,4 @@ COPY . /producer
 RUN set -e; \
     pip install --no-cache-dir -r requirements.txt;
 
-ENTRYPOINT python producer.py --url ${URL} --bootstrap-server ${BOOTSTRAP_SERVER} --topic ${TOPIC_ID} --frequency ${FREQUENCY} --regex ${REGEX}
+ENTRYPOINT python producer.py --url ${URL} --bootstrap-server ${BOOTSTRAP_SERVER} --topic ${TOPIC_ID} --frequency ${FREQUENCY}
