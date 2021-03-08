@@ -20,7 +20,7 @@ services:
   zookeeper:
     container_name: zookeper
     restart: on-failure
-    image: wurstmeister/zookeeper:3.4.6
+    image: wurstmeister/zookeeper
     hostname: zookeeper
     ports:
       - "2181:2181"
