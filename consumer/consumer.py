@@ -1,6 +1,7 @@
 import logging
 import os
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy import Column, String, Integer, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -50,7 +51,7 @@ def setup_db(uri: str):
     return db
 
 
-def init_session(db):
+def init_session(db: Engine):
     """
     Initialize SQLAlchemy DB session to enable DB operations
     """

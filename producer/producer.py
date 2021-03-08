@@ -4,6 +4,7 @@ import re
 import time
 import json
 import requests
+from requests import Response
 from datetime import datetime
 from requests.exceptions import ConnectionError
 from kafka import KafkaProducer
@@ -13,21 +14,21 @@ from kafka import KafkaProducer
 logger = logging.getLogger("producer")
 
 
-def regex_compiler(pattern):
+def regex_compiler(regex: str):
     """
     Regex compiler function to transform input argument
     """
-    return re.compile(pattern, re.IGNORECASE)
+    return re.compile(regex, re.IGNORECASE)
 
 
-def get_status_code(response):
+def get_status_code(response: Response):
     """
     The status of the response (int)
     """
     return response.status_code if response else None
 
 
-def get_elapsed_seconds(response):
+def get_elapsed_seconds(response: Response):
     """
     Time elapsed from sending the request
     to the arrival of the response (float)
@@ -44,7 +45,7 @@ def get_matches_count(text, regex):
     return len(regex.findall(text)) if regex else 0
 
 
-def get_response(url):
+def get_response(url: str):
     """
     Return response only if request is successful
     """
@@ -55,7 +56,7 @@ def get_response(url):
     return response
 
 
-def get_payload(response):
+def get_payload(response: Response):
     """
     Return URL payload from response content
     """
