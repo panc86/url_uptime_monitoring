@@ -1,8 +1,11 @@
 # Intro
-**Url Uptime Monitoring** monitors a URL for a period of time with a certain frequency. URL, frequency, and period of monitoring are user-defined.
+**Url Uptime Monitoring** tracks a `URL` with a certain `frequency`. Both URL and frequency are user-defined.
 
 # Architecture
-A Kafka Producer periodically collects a payload with the status code, the response elapsed time and the frequency of a user-defined regex pattern. Thereafter, it sends the payload to a Kafka topic via a Kafka Message Broker. The broker forward the received payload to a Kafka Consumer that reads it and store it into the RDBMS.
+A Kafka Producer periodically collects a Request payload with request timestamp, status code, and elapsed time.
+Optionally, a REGEX pattern can be provided at runtime to collect frequency of matches.
+Thereafter, it sends the payload to a Kafka topic via a Kafka Message Broker.
+The broker forward the received payload to a Kafka Consumer that reads it and store it into the RDBMS.
 
 # Requirements
 
@@ -23,10 +26,12 @@ From more info, see https://kafka-python.readthedocs.io/en/master/compatibility.
 
 # Run
 ```bash
-    URL_TO_TRACK=<http://www.url-to-monitor.com> BROKER_IP=<your-docker-host-ip> docker-compose up --build
+    URL_TO_TRACK=<http://url-to-track> BROKER_IP=<docker-host-ip> docker-compose up --build
 ```
-> TN: modify the BROKER_IP (i.e. KAFKA_ADVERTISED_HOST_NAME) to match your docker host IP. For more info,
-> see [#2](https://github.com/wurstmeister/kafka-docker#pre-requisites)
+> Notes
+> For more info on BROKER_IP (i.e. KAFKA_ADVERTISED_HOST_NAME), see [#2](https://github.com/wurstmeister/kafka-docker#pre-requisites)
+> * REGEX=`<regex-str>` to enable pattern matching
+> * DEBUG=1 to enable service logging
 
 # Tests
 Unit tests are implemented in the CI pipeline.
