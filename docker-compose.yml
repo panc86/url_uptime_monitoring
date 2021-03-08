@@ -66,13 +66,10 @@ services:
     depends_on:
       - kafka
     environment:
-      - POSTGRES_DB=database
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_USER=user
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-#      - HOST: "172.17.0.1:9092"
-#      - TOPIC: test
+      DB_URI: ${POSTGRES_DB_URI}
+      HOST: "${BROKER_IP}:9092"
+      TOPIC_ID: ${TOPIC_ID}
+      DEBUG: 0
 # ----------------------------
 
 networks:

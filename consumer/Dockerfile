@@ -10,4 +10,4 @@ RUN set -e; \
     apk --no-cache add postgresql-dev gcc python3-dev musl-dev; \
     pip install --no-cache-dir -r requirements.txt;
 
-ENTRYPOINT [ "python", "consumer.py" ]
+ENTRYPOINT python consumer.py --host ${HOST} --topic ${TOPIC_ID} --uri ${DB_URI}
