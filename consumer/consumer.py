@@ -38,11 +38,13 @@ class Message(base):
         return f'<Message #{self.id}>'
 
 
-def setup_db(uri):
+def setup_db(uri: str):
     """
     Create SQLAlchemy DB engine and return a DB session
     """
     db = create_engine(uri)
+    # drop metadata if exists
+    base.metadata.drop_all(db)
     base.metadata.create_all(db)
     logging.debug('created DB engine')
     return db
