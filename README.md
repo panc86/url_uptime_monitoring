@@ -15,26 +15,27 @@ A Kafka Producer periodically collects a payload with the status code, the respo
 From more info, see https://kafka-python.readthedocs.io/en/master/compatibility.html
 
 ## Producer
-requests == 2.25.1
+* requests == 2.25.1
 
 ## Consumer
-psycopg2 == 2.8.5
-SQLAlchemy == 1.3.23
+* SQLAlchemy == 1.3.23
+* psycopg2 == 2.8.5
 
 # Run
 ```bash
-    URL_TO_TRACK=<http://www.url-to-monitor.com> docker-compose up --build
+    URL_TO_TRACK=<http://www.url-to-monitor.com> BROKER_IP=<your-docker-host-ip> docker-compose up --build
 ```
-> modify the HOST_IP (KAFKA_ADVERTISED_HOST_NAME) to match your docker host IP
+> TN: modify the BROKER_IP (i.e. KAFKA_ADVERTISED_HOST_NAME) to match your docker host IP. For more info,
+> see [#2](https://github.com/wurstmeister/kafka-docker#pre-requisites)
 
 # Tests
-Run Unittests
+Unit tests are implemented in the CI pipeline.
 
 ```bash
     python -m pytest <directory>
 ```
+> Make sure the environment variables in `.env` are loaded and the services are running
 
-Run DB query
-```bash
-    
-```
+# Next Steps
+* Distribute DB on different files for service scalability
+* Flask interface for DB visualization
