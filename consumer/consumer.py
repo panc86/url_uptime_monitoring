@@ -74,7 +74,7 @@ def insert_to_db(message: Message, session: Session):
     session.commit()
 
 
-def init_consumer_client(host: str, topic: str):
+def init_consumer_client(bootstrap_server: str, topic: str):
     """
     Kafka Consumer client instance retrieves logs from the Kafka
     Producer and allows to iterate over them.
@@ -82,7 +82,7 @@ def init_consumer_client(host: str, topic: str):
     return KafkaConsumer(
         topic,
         api_version=(2,0,1),
-        bootstrap_servers=[host],
+        bootstrap_servers=[bootstrap_server],
         value_deserializer=lambda x: json.loads(x.decode('utf-8')),
         auto_offset_reset='earliest',
         enable_auto_commit=True,
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.INFO)
     parser = ArgumentParser(description="Consume messangers from Kafka Broker.")
-    parser.add_argument("--host", required=True, help="The bootstrap server address the Kafka Producer initially connects to.")
+    parser.add_argument("--bootstrap-server", required=True, help="The bootstrap server address the Kafka Producer initially connects to.")
     parser.add_argument("--topic", required=True, type=str, help="The Kafka topic ID.")
     parser.add_argument("--uri", required=True, type=str, help="Database URI.")
     args = parser.parse_args(sys.argv[1:])
@@ -106,10 +106,10 @@ if __name__ == "__main__":
 
     # Create Kafka Consumer client instance. It retrieves logs from the Kafka
     # Producer and allows to iterate over them. We then create DB entries
-    client = init_consumer_client(args.host, args.topic)
-
+    client = init_consumer_client(args.bootstrap_server, args.topic)
     # Create DB
     db = setup_db(args.uri)
+    logging.debug(f"DB URI: {args.uri}")
     # Initialize DB session
     session = init_session(db)
     # iter incoming messages
