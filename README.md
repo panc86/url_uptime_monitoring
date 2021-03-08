@@ -7,10 +7,10 @@ A Kafka Producer periodically collects a payload with the status code, the respo
 # Requirements
 
 ## Common
-python 3.8
-docker-compose 1.27.4, build 40524192
-kafka-python == 2.0.2
-pytest == 6.2.2
+* python 3.8
+* docker-compose 1.27.4, build 40524192
+* kafka-python == 2.0.2
+* pytest == 6.2.2
 
 From more info, see https://kafka-python.readthedocs.io/en/master/compatibility.html
 
@@ -18,16 +18,23 @@ From more info, see https://kafka-python.readthedocs.io/en/master/compatibility.
 requests == 2.25.1
 
 ## Consumer
-RDBMS
+psycopg2 == 2.8.5
+SQLAlchemy == 1.3.23
 
 # Run
-    MONITOR=http://www.url-to-monitor.com docker-compose up --build
+```bash
+    URL_TO_TRACK=<http://www.url-to-monitor.com> docker-compose up --build
+```
+> modify the HOST_IP (KAFKA_ADVERTISED_HOST_NAME) to match your docker host IP
 
 # Tests
+Run Unittests
 
-## Confirm Consumer Reception
 ```bash
-    docker exec -it kafka /bin/sh && \
-    $KAFKA_HOME/bin/kafka-console-consumer.sh  --topic test --from-beginning --bootstrap-server loc
-alhost:9092
+    python -m pytest <directory>
+```
+
+Run DB query
+```bash
+    
 ```
