@@ -53,12 +53,12 @@ services:
     depends_on:
       - kafka
     environment:
-      URL: ${MONITOR}
-      HOST: "172.17.0.1:9092"
-      TOPIC: test
+      URL: ${URL_TO_TRACK}
+      BOOTSTRAP_SERVER: "${BROKER_IP}:9092"
+      TOPIC_ID: ${TOPIC_ID}
       PATTERN: "\bfloods?\b"
       FREQUENCY: 30
-      DEADLINE: 500
+      DEBUG: 0
 
   consumer:
     build: ./consumer
