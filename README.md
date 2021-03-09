@@ -26,7 +26,7 @@ From more info, see https://kafka-python.readthedocs.io/en/master/compatibility.
 
 # Run
 ```bash
-    URL_TO_TRACK=<http://url-to-track> BROKER_IP=<docker-host-ip> docker-compose up --build
+>>> URL_TO_TRACK=<url> BROKER_IP=<docker-host-ip> docker-compose up --build
 ```
 > Notes
 > For more info on BROKER_IP (i.e. KAFKA_ADVERTISED_HOST_NAME), see [#2](https://github.com/wurstmeister/kafka-docker#pre-requisites)
@@ -37,7 +37,7 @@ From more info, see https://kafka-python.readthedocs.io/en/master/compatibility.
 Unit tests are implemented in the CI pipeline but can be run locally as follows:
 
 ```bash
-    pytest
+>>> pytest -v
 ```
 
 # Next Steps
