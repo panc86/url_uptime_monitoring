@@ -47,17 +47,9 @@ def setup_db(uri: str):
     # drop metadata if exists
     base.metadata.drop_all(db)
     base.metadata.create_all(db)
-    logging.debug('created DB engine')
-    return db
-
-
-def init_session(db: Engine):
-    """
-    Initialize SQLAlchemy DB session to enable DB operations
-    """
     Session = sessionmaker(db)
-    logging.debug('created DB session')
-    return Session()
+    logging.debug('created DB engine and session factory')
+    return db, Session
 
 
 def create_message_model(payload: dict):
@@ -109,11 +101,9 @@ if __name__ == "__main__":
     # Producer and allows to iterate over them. We then create DB entries
     client = init_consumer_client(args.bootstrap_server, args.topic)
     # Create DB
-    db = setup_db(args.uri)
     logging.debug(f"DB URI: {args.uri}")
-    # Initialize DB session
-    session = init_session(db)
+    db_connection, session_factory = setup_db(args.uri)
     # iter incoming messages
     for msg in client:
-        insert_to_db(create_message_model(msg.value), session)
+        insert_to_db(create_message_model(msg.value), session_factory())
         logging.debug('db insertion completed')

@@ -7,13 +7,13 @@ services:
     image: postgres:13-alpine
     hostname: postgres
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=database
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=user
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     ports:
-      - "${POSTGRES_PORT}"
+      - "5432:5432"
     volumes:
       - ./data/db:/var/lib/postgresql/data
 
@@ -37,13 +37,14 @@ services:
     environment:
       KAFKA_ADVERTISED_HOST_NAME: ${BROKER_IP}
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_CREATE_TOPICS: "${TOPIC_ID}:1:1,test_${TOPIC_ID}:1:1"
+      KAFKA_CREATE_TOPICS: "topic:1:1,test_topic:1:1"
     ports:
       - "9092:9092"
     networks:
       - back-tier
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - "psqldb:/var/lib/postgresql/data"
 
 # MY SERVICES DEFINITIONS HERE
 # ----------------------------
@@ -55,7 +56,7 @@ services:
     environment:
       URL: ${URL_TO_TRACK}
       BOOTSTRAP_SERVER: "${BROKER_IP}:9092"
-      TOPIC_ID: ${TOPIC_ID}
+      TOPIC_ID: topic
       REGEX: ${REGEX}
       FREQUENCY: 30
       DEBUG: 0
@@ -65,28 +66,19 @@ services:
     container_name: consumer
     depends_on:
       - kafka
+      - postgres
     environment:
-      DB_URI: ${DB_URI}
-      DB_URI_TEST: ${DB_URI_TEST}
+      DB_URI: "postgresql://user:password@postgres:5432/database"
       BOOTSTRAP_SERVER: "${BROKER_IP}:9092"
-      TOPIC_ID: ${TOPIC_ID}
+      TOPIC_ID: topic
       DEBUG: 0
-
-  postgres_test:
-    container_name: postgres_test
-    image: postgres:13-alpine
-    hostname: postgres_test
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-    ports:
-      - "${POSTGRES_PORT}"
-    command: -c fsync=off
 # ----------------------------
 
 networks:
   back-tier:
     attachable: true
+
+# data persists in /var/lib/docker/volumes
+# until `docker-compose down -v`
+volumes:
+  psqldb:

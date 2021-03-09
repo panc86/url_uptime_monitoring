@@ -34,13 +34,16 @@ From more info, see https://kafka-python.readthedocs.io/en/master/compatibility.
 > * DEBUG=1 to enable service logging
 
 # Tests
-Unit tests are implemented in the CI pipeline.
+Unit tests are implemented in the CI pipeline but can be run locally as follows:
 
 ```bash
-    python -m pytest <directory>
+    pytest
 ```
 > Make sure the environment variables in `.env` are loaded and the services are running
 
 # Next Steps
-* Distribute DB on different files for service scalability
-* Flask interface for DB visualization
+* Remove hardcoded sensitive variables
+* Extend tests coverage
+* Better organization of the tests layout
+* Add database reading behaviour
+* Distribute data over multiple files for scalability

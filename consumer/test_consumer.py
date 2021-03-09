@@ -1,13 +1,15 @@
 # pylint: disable=redefined-outer-name
 import pytest
-import os
-import consumer
+from datetime import datetime
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
+# to test
+from consumer import setup_db, insert_to_db, create_message_model, Message
 
 
-payload = dict(
-        created_at="2021-03-08T17:49:12.629564",
+def payload_valid():
+    return dict(
+        created_at=datetime.utcnow(), # sqlite does not accept strings as dates
         status_code=420,
         elapsed_seconds=0.0420,
         regex_matches=0,
@@ -15,79 +17,78 @@ payload = dict(
     )
 
 
-@pytest.fixture(scope="module")
-def test_db():
-    return consumer.setup_db(os.environ['DB_URI_TEST'])
-
-@pytest.fixture(scope="module")
-def test_session(test_db):
-    return consumer.init_session(test_db)
-
-
-@pytest.fixture(scope="module")
-def consumer_client():
-    return consumer.init_consumer_client(
-        os.environ['BOOTSTRAP_SERVER'], 'test_' + os.environ['TOPIC_ID']
+def payload_invalid():
+    return dict(
+        status_=420, # wrong key name
+        elapsed_seconds=0.0420,
+        regex_pattern=None
     )
 
 
+def payload_incomplete():
+    return dict(
+        elapsed_seconds=0.0420,
+        regex_pattern=None
+    )
+
+
+# test db uri
+URI = "sqlite:///:memory:"
+
+
+def test_setup_db():
+    db, make_session = setup_db(URI)
+    s = make_session()
+    # DB Engin instance expected
+    assert isinstance(db, Engine)
+    # Messages table expected
+    assert db.table_names() == ["messages"], "Should contain `messages` table."
+    # Session instance expected
+    assert isinstance(s, Session), "Should be Session class type."
+
+
 def test_create_message_model():
-    msg = consumer.create_message_model(payload)
+    # load good message
+    message = create_message_model(payload_valid())
     # Expected in a good message
-    assert hasattr(msg, "created_at")
-    assert hasattr(msg, "status_code")
-    assert hasattr(msg, "elapsed_seconds")
-    assert hasattr(msg, "regex_matches")
-    assert hasattr(msg, "regex_pattern")
+    assert hasattr(message, "created_at")
+    assert hasattr(message, "status_code")
+    assert hasattr(message, "elapsed_seconds")
+    assert hasattr(message, "regex_matches")
+    assert hasattr(message, "regex_pattern")
 
 
 def test_create_message_model_with_bad_payload():
     # Expected in a bad message
     with pytest.raises(TypeError):
-        consumer.Message(**{
-            "status_": 420, # wrong key name
-            "elapsed_seconds": 0.0420,
-            "regex_pattern": None
-            })
+        Message(**payload_invalid())
 
 
 def test_create_message_model_with_incomplete_payload():
     # Expected in a incomplete message
     with pytest.raises(TypeError):
-        consumer.Message(**dict(
-            status_code=420,
-            elapsed_seconds=0.0420,
-            regex_pattern=None
-        ))
+        Message(**payload_incomplete())
 
 
-def test_setup_db(test_db):
-    # DB Engin instance expected
-    assert isinstance(test_db, Engine)
-    # Messages table expected
-    assert test_db.table_names() == ["messages"]
-
-
-def test_init_session(test_session):
-    # Session instance expected
-    assert isinstance(test_session, Session)
-
-
-def test_db_empty(test_session):
+def test_db_empty():
+    _, make_session = setup_db(URI)
+    s = make_session()
     # .first() returns None if DB in session is empty
-    assert test_session.query(consumer.Message).first() is None
+    assert s.query(Message).first() is None, "Should not exisis."
 
 
-def test_insert_to_db(test_session):
+def test_insert_to_db():
+    _, make_session = setup_db(URI)
+    s = make_session()
     # insert first record
-    consumer.insert_to_db(consumer.Message(**payload), test_session)
+    insert_to_db(Message(**payload_valid()), s)
     # query first record
-    first_entry = test_session.query(consumer.Message).first()
+    first_entry = s.query(Message).first()
     # assert if first record
-    assert first_entry.id == 1
+    assert first_entry.id == 1, "Should be 1."
 
 
-def test_init_consumer_client(consumer_client):
-    # Is client online?
-    assert consumer_client._closed is False
-    assert consumer_client.subscription() == {'test_' + os.environ['TOPIC_ID']}
+def test_db_recreation():
+    db, make_session = setup_db(URI)
+    s = make_session()
+    assert s.query(Message).first() is None, "Should not exisis."
