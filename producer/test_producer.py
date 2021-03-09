@@ -1,12 +1,10 @@
 # pylint: disable=redefined-outer-name
 import pytest
-import os
 import re
 import time
 import datetime
 import producer
 from requests import Response
-from kafka import KafkaProducer
 
 
 class TestResponse(object):
@@ -53,13 +51,4 @@ def test_get_payload():
     payload = producer.get_payload(response)
     assert len(payload) == 3
     assert "created_at" in payload
-    assert isinstance(payload["created_at"], str)
-
-
-def test_client_connected():
-    client = KafkaProducer(
-        api_version=(2,0,1),
-        bootstrap_servers=[os.environ['BOOTSTRAP_SERVER']],
-    )
-    time.sleep(1)
-    assert client.bootstrap_connected()
+    assert type(payload["created_at"]) == str

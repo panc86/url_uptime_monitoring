@@ -37,10 +37,11 @@ From more info, see https://kafka-python.readthedocs.io/en/master/compatibility.
 Unit tests are implemented in the CI pipeline.
 
 ```bash
-    python -m pytest <directory>
+    /bin/bash tests.sh
 ```
 > Make sure the environment variables in `.env` are loaded and the services are running
 
 # Next Steps
+* Better integration 
 * Distribute DB on different files for service scalability
 * Flask interface for DB visualization
