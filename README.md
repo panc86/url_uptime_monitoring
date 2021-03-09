@@ -1,11 +1,11 @@
 # Intro
-**Url Uptime Monitoring** tracks a `URL` with a certain `frequency`. Both URL and frequency are user-defined.
+**Url Uptime Monitoring** tracks a URL with a certain frequency. Both URL and frequency are user-defined.
 
 # Architecture
-A Kafka Producer periodically collects a Request payload with request timestamp, status code, and elapsed time.
+A Kafka Producer periodically collects a Request payload with request UTC datetime, status code, and elapsed time.
 Optionally, a REGEX pattern can be provided at runtime to collect frequency of matches.
 Thereafter, it sends the payload to a Kafka topic via a Kafka Message Broker.
-The broker forward the received payload to a Kafka Consumer that reads it and store it into the RDBMS.
+The broker forward the received payload to a Kafka Consumer that reads it and store it into the PostgreDB.
 
 # Requirements
 
@@ -39,7 +39,6 @@ Unit tests are implemented in the CI pipeline but can be run locally as follows:
 ```bash
     pytest
 ```
-> Make sure the environment variables in `.env` are loaded and the services are running
 
 # Next Steps
 * Remove hardcoded sensitive variables
